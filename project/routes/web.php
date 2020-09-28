@@ -80,7 +80,13 @@ Route::middleware(['auth:sanctum', 'verified'])->get('/update/{books_id}', funct
 //Delete
 Route::middleware(['auth:sanctum', 'verified'])->get('/delete/{books_id}', function ($books_id) {
     $books = Books::findOrFail($books_id);
-    $books->delete($books->id);
+    define("db_host", "localhost");
+    define("db_user", "root");
+    define("db_pass", "");
+    define("db_db", "project");
+    $db = mysqli_connect(db_host, db_user, db_pass, db_db,3307);
+    $sql = "DELETE FROM project.books WHERE ID=$books_id"; 
+    mysqli_query($db, $sql); 
     return redirect ("allbooks");
 })->name('delete');
 
