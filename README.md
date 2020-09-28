@@ -1,3 +1,3 @@
 # Library_website
-ITI summer training final project.
-A library website using Laravel framework
+ITI summer training Open Source course final project.
+An online library website using Laravel framework
