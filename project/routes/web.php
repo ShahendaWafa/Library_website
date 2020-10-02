@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Models\Books;
-use App\Models\User;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -19,122 +17,49 @@ Route::get('/', function () {
 });
 
 
+/////---User Routes---
+
 //Dashboard
-Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
-    return view('dashboard');
-})->name('dashboard');
-
-
-//All Books
-Route::middleware(['auth:sanctum', 'verified'])->get('/allbooks', function () {
-    $books = Books::all();
-    return view('allbooks',['books'=>$books]);
-})->name('allbooks');
-
+Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', "App\Http\Controllers\UserController@dashboard");
 
 //All Users
-Route::middleware(['auth:sanctum', 'verified'])->get('/allusers', function () {
-    $users = User::all();
-    return view('allusers',['users'=>$users]);
-})->name('allusers');
-
-
-//Add a Book
-Route::middleware(['auth:sanctum', 'verified'])->get('/add', function () {
-    return view('add');
-})->name('add');
-
-
-//Submit the Added book
-Route::middleware(['auth:sanctum', 'verified'])->get('/submit', function () {
-    $name = request("name");
-    $author = request("author");
-    $edition = request("edition");
-    $books = new books;
-    $books->name = $name;
-    $books->author = $author;
-    $books->edition_no = $edition;
-    $books->save();
-    return redirect('/allbooks');
-})->name('submit');
-
-
-//Edit book's detail
-Route::middleware(['auth:sanctum', 'verified'])->get('/edit/{books_id}', function ($books_id) {
-    $book_data = Books::findOrFail($books_id);
-    return view('edit',["books"=>$book_data]);
-})->name('edit');
-
-
-//Update button
-Route::middleware(['auth:sanctum', 'verified'])->get('/update/{books_id}', function ($books_id) {
-        $books = Books::findOrFail($books_id);
-        $books->name = request('name');
-        $books->author = request('author');
-        $books->edition_no = request('edition');
-        $books->save();
-        return redirect ("allbooks/");
-})->name('update');
-
-
-//Delete
-Route::middleware(['auth:sanctum', 'verified'])->get('/delete/{books_id}', function ($books_id) {
-    $books = Books::findOrFail($books_id);
-    define("db_host", "localhost");
-    define("db_user", "root");
-    define("db_pass", "");
-    define("db_db", "project");
-    $db = mysqli_connect(db_host, db_user, db_pass, db_db,3307);
-    $sql = "DELETE FROM project.books WHERE ID=$books_id"; 
-    mysqli_query($db, $sql); 
-    return redirect ("allbooks");
-})->name('delete');
-
+Route::middleware(['auth:sanctum', 'verified'])->get('/allusers', "App\Http\Controllers\UserController@allusers");
 
 //Show Student's Details
-Route::middleware(['auth:sanctum', 'verified'])->get('/show/{user_id}', function ($user_id) {
-    $user_data = User::findOrFail($user_id);
-    return view('show',["user"=>$user_data]);
-})->name('show');
+Route::middleware(['auth:sanctum', 'verified'])->get('/show/{user_id}', "App\Http\Controllers\UserController@show");
 
+
+/////--Book Routes---
+
+//All Books
+Route::middleware(['auth:sanctum', 'verified'])->get('/allbooks', "App\Http\Controllers\BooksController@allbooks");
+
+//Add a Book
+Route::middleware(['auth:sanctum', 'verified'])->get('/add', "App\Http\Controllers\BooksController@addbooks");
+
+//Submit the Added book
+Route::middleware(['auth:sanctum', 'verified'])->get('/submit', "App\Http\Controllers\BooksController@submitbook");
+
+//Edit book's detail
+Route::middleware(['auth:sanctum', 'verified'])->get('/edit/{books_id}',  "App\Http\Controllers\BooksController@editbook");
+
+//Update button
+Route::middleware(['auth:sanctum', 'verified'])->get('/update/{books_id}', "App\Http\Controllers\BooksController@update");
+
+//Delete
+Route::middleware(['auth:sanctum', 'verified'])->get('/delete/{books_id}', "App\Http\Controllers\BooksController@delete");
 
 //Borrow Button
-Route::middleware(['auth:sanctum', 'verified'])->get('/return/{id}', function ($id) { 
-    $books_data = Books::findOrFail($id);
-    return view('return',["books"=>$books_data]);
-})->name('return');
+Route::middleware(['auth:sanctum', 'verified'])->get('/return/{id}', "App\Http\Controllers\BooksController@borrow");
 
 //Return Date and Time
-Route::middleware(['auth:sanctum', 'verified'])->get('/date_time/{books_id}', function ($books_id) {
-    $books = Books::findOrFail($books_id);
-    $user_name = Auth::user()->name;
-    $books->borrowed_by = $user_name;
-    $books->return_date = request('date');
-    $books->return_time = request('time');
-    $books->save();
-    $books = Books::find($books_id)->delete();
-    return redirect ("/borrowedbooks");
-})->name('date_time');
-
+Route::middleware(['auth:sanctum', 'verified'])->get('/date_time/{books_id}', "App\Http\Controllers\BooksController@return");
 
 //Borrowed Books
- Route::middleware(['auth:sanctum', 'verified'])->get('/borrowedbooks', function () {
-    $books = Books::onlyTrashed()->latest()->paginate();
-    $books2 = Books::onlyTrashed()->latest()->paginate();
-    return view('borrowedbooks',["books"=>$books],["books2"=>$books2]); 
-})->name('borrowedbooks');
+ Route::middleware(['auth:sanctum', 'verified'])->get('/borrowedbooks', "App\Http\Controllers\BooksController@borrowed");
  
-
 // Return Button
-Route::middleware(['auth:sanctum', 'verified'])->get('/borrowedbooks/{id}', function ($id) {
-    $books = Books::onlyTrashed()->where('id',$id)->first()->restore();
-    $books = Books::findOrFail($id);
-    $books->borrowed_by = null;
-    $books->return_date = null;
-    $books->return_time = null;
-    $books->save();
-    return redirect('borrowedbooks');
-})->name('borrowedbooks');
+Route::middleware(['auth:sanctum', 'verified'])->get('/borrowedbooks/{id}', "App\Http\Controllers\BooksController@returnbutton");
 
 ////
 
